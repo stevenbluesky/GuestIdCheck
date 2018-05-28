@@ -97,7 +97,7 @@ public class RuimuCheck
 	{
 		
 		RuimuHeartBeatResponse rsp = new RuimuHeartBeatResponse(getCommandId(json) , 0 );
-		rsp.getTasks().add(new RuimuTask(1 , "ab2324f12ca2312b213133bfac"));
+		rsp.getTasks().add(new RuimuTask(1 , "a08d0cb23ed3e60bb2c58d8bbbcf71f"));
 		rsp.getTasks().add(new RuimuTask(5 , password));
 
 		return rsp;
