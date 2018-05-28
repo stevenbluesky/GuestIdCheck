@@ -1,0 +1,7 @@
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:9510/eureka/
+spring:
+  application:
+    name: ruimu id checker
