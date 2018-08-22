@@ -97,7 +97,7 @@ public class LockPasswordService {
         //"您的${hotal}${room}开门密码为${password}，有效时间为${starttime}-${endtime}，欢迎入住。"
         MessageParser mp = new MessageParser(null ,templatecode , json);
         AliSmsSender sender = new AliSmsSender();
-        //sender.sendSMS("86", lockpassword.getPhonenumber(), mp);
+        sender.sendSMS("86", lockpassword.getPhonenumber(), mp);
     }
 
     @Transactional
