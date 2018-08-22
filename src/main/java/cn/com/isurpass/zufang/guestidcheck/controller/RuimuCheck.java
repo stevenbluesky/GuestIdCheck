@@ -7,9 +7,11 @@ import java.util.Enumeration;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.com.isurpass.zufang.guestidcheck.service.LockPasswordService;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
@@ -27,9 +29,10 @@ import cn.com.isurpass.zufang.guestidcheck.vo.RuimuTask;
 @Controller  
 @RequestMapping(value="/ruimu")
 @EnableAutoConfiguration
-public class RuimuCheck 
-{
+public class RuimuCheck {
 	private final static String password = "9emvf823mivc63JS6Q0dms" ;
+	@Autowired
+	private LockPasswordService lps;
 	
 	@RequestMapping(value ="/ruimurequest", method ={RequestMethod.POST,RequestMethod.GET})  
     @ResponseBody 
@@ -69,49 +72,58 @@ public class RuimuCheck
 		return rst ;
     }
 	
-	private boolean checkMd5(String rsqstr  , String password , String ruimumd5)
-	{
+	private boolean checkMd5(String rsqstr  , String password , String ruimumd5) {
 		String str = rsqstr + password ;
 		
 		String svrmd5 = DigestUtils.md5Hex(str);
 
 		System.out.println(svrmd5);
 		
-		if ( StringUtils.isEmpty(ruimumd5))
-		{
+		if ( StringUtils.isEmpty(ruimumd5)) {
 			System.out.println("Ruimu MD5 is null");
 			return false ;
 		}
 		
 		
-		if ( svrmd5.equalsIgnoreCase(ruimumd5))
-		{
+		if ( svrmd5.equalsIgnoreCase(ruimumd5)) {
 			System.out.println("Md5 match");
 			return true ;
 		}
-		else
-		{
+		else {
 			System.out.println("Md5 not match");
 			return false ;
 		}
 	}
-    
-	public RuimuIdCheckResponse guestchecked(JSONObject json)
-	{
-		if ( json.containsKey("cardInfo") && json.getJSONObject("cardInfo").containsKey("identityPic"))
-			savepic("identityPic.jpg" , json.getJSONObject("cardInfo").getString("identityPic"));
-		if ( json.containsKey("verifyResult") && json.getJSONObject("verifyResult").containsKey("photo"))
-			savepic("photo.jpg" , json.getJSONObject("verifyResult").getString("photo"));
+
+	/**
+	 * 上传刷脸记录
+	 * @param json
+	 * @return
+	 */
+	public RuimuIdCheckResponse guestchecked(JSONObject json) {
+		if ( json.containsKey("cardInfo") && json.getJSONObject("cardInfo").containsKey("identityPic")) {
+			savepic("identityPic.jpg", json.getJSONObject("cardInfo").getString("identityPic"));
+		}
+
+		if ( json.containsKey("verifyResult") && json.getJSONObject("verifyResult").containsKey("photo")) {
+			savepic("photo.jpg", json.getJSONObject("verifyResult").getString("photo"));
+		}
+		if(json.containsKey("cardInfo") && json.getJSONObject("cardInfo").containsKey("partName")){
+			lps.sendMessageToCustomer(json.getJSONObject("cardInfo").getString("partName"));
+		}
 
 		return new RuimuIdCheckResponse(getCommandId(json) , 0 , "");
 	}
-	
-	public RuimuHeartBeatResponse heartbeat(JSONObject json)
-	{
+
+	/**
+	 * 心跳回复
+	 * @param json
+	 * @return
+	 */
+	public RuimuHeartBeatResponse heartbeat(JSONObject json) {
 		
 		RuimuHeartBeatResponse rsp = new RuimuHeartBeatResponse(getCommandId(json) , 0 );
-		if ( json.containsKey("statCode") && json.getIntValue("statCode") != 1 )
-		{
+		if ( json.containsKey("statCode") && json.getIntValue("statCode") != 1 ) {
 			rsp.getTasks().add(new RuimuTask(1 , "a08d0cb23ed3e60bb2c58d8bbbcf71f"));
 			rsp.getTasks().add(new RuimuTask(5 , password));
 		}
@@ -119,8 +131,7 @@ public class RuimuCheck
 		return rsp;
 	}
 	
-	private String getCommandId(JSONObject json)
-	{
+	private String getCommandId(JSONObject json) {
 		if ( json == null )
 			return "";
 		if ( !json.containsKey("commandid"))
@@ -128,12 +139,10 @@ public class RuimuCheck
 		return json.getString("commandid");
 	}
 	
-	private void printRequestData(HttpServletRequest request)
-	{
+	private void printRequestData(HttpServletRequest request) {
 		System.out.println("parameter------");
 		Enumeration<String> ans = request.getParameterNames();
-		for ( ; ans.hasMoreElements();)
-		{
+		for ( ; ans.hasMoreElements();) {
 			String key = ans.nextElement();
 			System.out.print(key); 
 			System.out.print("=");
@@ -142,8 +151,7 @@ public class RuimuCheck
 		
 		System.out.println("Header------");
 		ans = request.getHeaderNames();
-		for ( ; ans.hasMoreElements();)
-		{
+		for ( ; ans.hasMoreElements();) {
 			String key = ans.nextElement();
 			System.out.print(key); 
 			System.out.print("=");
