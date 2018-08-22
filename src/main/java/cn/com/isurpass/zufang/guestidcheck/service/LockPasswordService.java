@@ -15,6 +15,7 @@ import cn.com.isurpass.zufang.guestidcheck.util.MjConfig;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.transaction.Transactional;
 import java.util.*;
@@ -76,6 +77,9 @@ public class LockPasswordService {
         String templatecode = MjConfig.get("passwordSmsTemplateCode");
         long dvcid = lockpassword.getDvcid();
         Device device = dd.findById(dvcid);
+        if(device.getBindRoomId()==null||device.getDistrictId()==null|| StringUtils.isEmpty(lockpassword.getPassword())){
+            return ;
+        }
         long bindRoomId = device.getBindRoomId();
         long districtId = device.getDistrictId();
         District district = districtDAO.findById(districtId);
@@ -93,7 +97,7 @@ public class LockPasswordService {
         //"您的${hotal}${room}开门密码为${password}，有效时间为${starttime}-${endtime}，欢迎入住。"
         MessageParser mp = new MessageParser(null ,templatecode , json);
         AliSmsSender sender = new AliSmsSender();
-        sender.sendSMS("86", lockpassword.getPhonenumber(), mp);
+        //sender.sendSMS("86", lockpassword.getPhonenumber(), mp);
     }
 
     @Transactional
