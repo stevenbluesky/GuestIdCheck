@@ -11,6 +11,8 @@ import cn.com.isurpass.zufang.guestidcheck.service.LockPasswordService;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -33,11 +35,12 @@ public class RuimuCheck {
 	private final static String password = "9emvf823mivc63JS6Q0dms" ;
 	@Autowired
 	private LockPasswordService lps;
-	
+	private static final Logger log = LoggerFactory.getLogger(RuimuCheck.class);
 	@RequestMapping(value ="/ruimurequest", method ={RequestMethod.POST,RequestMethod.GET})  
     @ResponseBody 
     public Object ruimurequest(HttpServletRequest request,HttpServletResponse response)
     {
+    	log.info("成功进入接口程序");
 		System.out.println();
 		System.out.println("Request arrive:******************************");
 		printRequestData(request);
@@ -101,6 +104,7 @@ public class RuimuCheck {
 	 * @return
 	 */
 	public RuimuIdCheckResponse guestchecked(JSONObject json) {
+		log.info("上传刷脸记录");
 		if ( json.containsKey("cardInfo") && json.getJSONObject("cardInfo").containsKey("identityPic")) {
 			savepic("identityPic.jpg", json.getJSONObject("cardInfo").getString("identityPic"));
 		}

@@ -13,11 +13,14 @@ import cn.com.isurpass.zufang.guestidcheck.util.AliSmsSender;
 import cn.com.isurpass.zufang.guestidcheck.util.MessageParser;
 import cn.com.isurpass.zufang.guestidcheck.util.MjConfig;
 import com.alibaba.fastjson.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.transaction.Transactional;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -36,9 +39,10 @@ public class LockPasswordService {
     private DistrictDAO districtDAO;
     @Autowired
     private RoomDAO roomDAO;
-
+    private static final Logger log = LoggerFactory.getLogger(LockPasswordService.class);
     @Transactional
     public void sendMessageToCustomer(String name) {
+        log.info("进入发送短信程序");
         List<Long> deviceidlist = new ArrayList<>();
         Set<String> phonenumberset = new TreeSet<>();
         String districtIds = MjConfig.get("districtId");
@@ -61,11 +65,13 @@ public class LockPasswordService {
         if (phonenumberset.size() == 1) {
             //发密码短信咯
             for (LockPassword l : lockpasswordrecordlist){
+                log.info("准备发送密码短信");
                 sendPasswordSms(l);
             }
         }else if(phonenumberset.size()>1){
             //找客服
             for (LockPassword l : lockpasswordrecordlist) {
+                log.info("准备发送提示短信");
                 sendTipSms(l);
             }
         }
@@ -73,6 +79,7 @@ public class LockPasswordService {
 
     @Transactional
     public void sendPasswordSms(LockPassword lockpassword) {
+        SimpleDateFormat sdf = new SimpleDateFormat("-MM-dd hh:mm:ss");
         JSONObject json = new JSONObject();
         String templatecode = MjConfig.get("passwordSmsTemplateCode");
         long dvcid = lockpassword.getDvcid();
@@ -90,14 +97,15 @@ public class LockPasswordService {
             json.put("hotal",district.getDistrictName());
             json.put("room",room.getRoomName());
             json.put("password",password);
-            json.put("starttime",lockpassword.getValidfrom());
-            json.put("endtime",lockpassword.getValidthrough());
+            json.put("starttime",sdf.format(lockpassword.getValidfrom()));
+            json.put("endtime",sdf.format(lockpassword.getValidthrough()));
         }
 
         //"您的${hotal}${room}开门密码为${password}，有效时间为${starttime}-${endtime}，欢迎入住。"
         MessageParser mp = new MessageParser(null ,templatecode , json);
         AliSmsSender sender = new AliSmsSender();
         sender.sendSMS("86", lockpassword.getPhonenumber(), mp);
+        log.info("发送密码短信成功");
     }
 
     @Transactional
@@ -109,6 +117,7 @@ public class LockPasswordService {
         MessageParser mp = new MessageParser(null ,templatecode , json);
         AliSmsSender sender = new AliSmsSender();
         sender.sendSMS("86", lockpassword.getPhonenumber(), mp);
+        log.info("发送提示短信成功");
     }
 
 }

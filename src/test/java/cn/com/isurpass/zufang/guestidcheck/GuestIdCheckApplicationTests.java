@@ -23,6 +23,6 @@ public class GuestIdCheckApplicationTests {
 	}
 	@Test
 	public void deAES(){
-		System.out.println("解密后："+AES.decrypt2Str("pm3XpCLtXU8igX8ohijjAw=="));
+		System.out.println("解密后："+AES.decrypt2Str(""));
 	}
 }
