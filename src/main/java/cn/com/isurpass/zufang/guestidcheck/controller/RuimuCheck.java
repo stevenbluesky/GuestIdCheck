@@ -40,7 +40,6 @@ public class RuimuCheck {
     @ResponseBody 
     public Object ruimurequest(HttpServletRequest request,HttpServletResponse response)
     {
-    	log.info("成功进入接口程序");
 		System.out.println();
 		System.out.println("Request arrive:******************************");
 		printRequestData(request);
@@ -104,7 +103,6 @@ public class RuimuCheck {
 	 * @return
 	 */
 	public RuimuIdCheckResponse guestchecked(JSONObject json) {
-		log.info("上传刷脸记录");
 		if ( json.containsKey("cardInfo") && json.getJSONObject("cardInfo").containsKey("identityPic")) {
 			savepic("identityPic.jpg", json.getJSONObject("cardInfo").getString("identityPic"));
 		}
@@ -112,8 +110,13 @@ public class RuimuCheck {
 		if ( json.containsKey("verifyResult") && json.getJSONObject("verifyResult").containsKey("photo")) {
 			savepic("photo.jpg", json.getJSONObject("verifyResult").getString("photo"));
 		}
-		if(json.containsKey("cardInfo") && json.getJSONObject("cardInfo").containsKey("partName")){
-			lps.sendMessageToCustomer(json.getJSONObject("cardInfo").getString("partName"));
+		if(json.containsKey("cardInfo") && json.getJSONObject("cardInfo").containsKey("partyName")&&
+				json.containsKey("verifyResult") && json.getJSONObject("verifyResult").getBoolean("success")&&
+				json.getJSONObject("verifyResult").getDouble("similar")>0.2){
+			log.info("上传参数：{\nbornDay:"+json.getJSONObject("cardInfo").getString("bornDay")+"\ncertAddress:"+json.getJSONObject("cardInfo").getString("certAddress")+
+					"\ncertNumber:"+json.getJSONObject("cardInfo").getString("certNumber")+"\npartyName:"+json.getJSONObject("cardInfo").getString("partyName")+
+					"\nsuccess:"+json.getJSONObject("verifyResult").getBoolean("success")+"\nsimilar:"+json.getJSONObject("verifyResult").getDouble("similar")+"}");
+			lps.sendMessageToCustomer(json.getJSONObject("cardInfo").getString("partyName"));
 		}
 
 		return new RuimuIdCheckResponse(getCommandId(json) , 0 , "");

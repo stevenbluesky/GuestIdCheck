@@ -11,11 +11,11 @@ import cn.com.isurpass.zufang.guestidcheck.po.Room;
 import cn.com.isurpass.zufang.guestidcheck.util.AES;
 import cn.com.isurpass.zufang.guestidcheck.util.AliSmsSender;
 import cn.com.isurpass.zufang.guestidcheck.util.MessageParser;
-import cn.com.isurpass.zufang.guestidcheck.util.MjConfig;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -39,19 +39,27 @@ public class LockPasswordService {
     private DistrictDAO districtDAO;
     @Autowired
     private RoomDAO roomDAO;
+
+    @Value("${districtId}")
+    private String districtId;
+    @Value("${servicePhonenumber}")
+    private String servicePhonenumber;
+    @Value("${passwordSmsTemplateCode}")
+    private String passwordSmsTemplateCode;
+    @Value("${tipSmsTemplateCode}")
+    private String tipSmsTemplateCode;
     private static final Logger log = LoggerFactory.getLogger(LockPasswordService.class);
     @Transactional
     public void sendMessageToCustomer(String name) {
-        log.info("进入发送短信程序");
         List<Long> deviceidlist = new ArrayList<>();
         Set<String> phonenumberset = new TreeSet<>();
-        String districtIds = MjConfig.get("districtId");
+        String districtIds = /*MjConfig.get("districtId")*/districtId;
         long districtId = Long.parseLong(districtIds);
         List<Device> devicelist = dd.findByDistrictIdAndDeviceType(districtId, 0);
         for (Device d : devicelist) {
             deviceidlist.add(d.getId());
         }
-        List<LockPassword> lockpasswordrecordlist = lpd.findByUsernameAndUsertype(name, 21);
+        List<LockPassword> lockpasswordrecordlist = lpd.findByUsernameAndUsertypeAndStatus(name, 21,0);
         for (Iterator it = lockpasswordrecordlist.iterator(); it.hasNext(); ) {
             LockPassword lp = (LockPassword) it.next();
             if (lp.getValidthrough().getTime() < new Date().getTime() || lp.getDeletetime() != null ||
@@ -79,9 +87,9 @@ public class LockPasswordService {
 
     @Transactional
     public void sendPasswordSms(LockPassword lockpassword) {
-        SimpleDateFormat sdf = new SimpleDateFormat("-MM-dd hh:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm:ss");
         JSONObject json = new JSONObject();
-        String templatecode = MjConfig.get("passwordSmsTemplateCode");
+        String templatecode = /*MjConfig.get("passwordSmsTemplateCode")*/passwordSmsTemplateCode;
         long dvcid = lockpassword.getDvcid();
         Device device = dd.findById(dvcid);
         if(device.getBindRoomId()==null||device.getDistrictId()==null|| StringUtils.isEmpty(lockpassword.getPassword())){
@@ -111,8 +119,8 @@ public class LockPasswordService {
     @Transactional
     public void sendTipSms(LockPassword lockpassword){
         JSONObject json = new JSONObject();
-        String templatecode = MjConfig.get("tipSmsTemplateCode");
-        json.put("phonenumber",MjConfig.get("servicePhonenumber"));
+        String templatecode = /*MjConfig.get("tipSmsTemplateCode")*/tipSmsTemplateCode;
+        json.put("phonenumber",/*MjConfig.get("servicePhonenumber")*/servicePhonenumber);
         //"请联系客户服务部门获取开门密码，客服电话：${phonenumber}。"
         MessageParser mp = new MessageParser(null ,templatecode , json);
         AliSmsSender sender = new AliSmsSender();

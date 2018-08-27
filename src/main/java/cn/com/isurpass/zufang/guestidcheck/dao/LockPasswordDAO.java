@@ -15,5 +15,5 @@ import java.util.List;
 @Repository
 public interface LockPasswordDAO extends CrudRepository<LockPassword,Integer> {
 
-    List<LockPassword> findByUsernameAndUsertype(String name, int i);
+    List<LockPassword> findByUsernameAndUsertypeAndStatus(String name, int i, int i1);
 }
