@@ -35,47 +35,42 @@ import com.alibaba.fastjson.JSONObject;
 public class HttpUtil {
 
 	private static Log log = LogFactory.getLog(HttpUtil.class);
-	
-	public static String httpGet(String url , JSONObject parameter , JSONObject header)
-	{
-		try 
-		{
-			if ( log.isInfoEnabled() )
+
+	public static String httpGet(String url, JSONObject parameter, JSONObject header) {
+		try {
+			if (log.isInfoEnabled())
 				log.info(parameter.toJSONString());
-			
+
 			StringBuffer sb = new StringBuffer();
-			if ( parameter != null )
-				for ( String key : parameter.keySet())
-				{
-					if ( sb.length() != 0 )
+			if (parameter != null)
+				for (String key : parameter.keySet()) {
+					if (sb.length() != 0)
 						sb.append("&");
-					sb.append(key).append("=").append(URLEncoder.encode(parameter.getString(key) , "UTF-8"));
+					sb.append(key).append("=").append(URLEncoder.encode(parameter.getString(key), "UTF-8"));
 				}
-			
-			if ( url.contains("?"))
+
+			if (url.contains("?"))
 				url += "&" + sb.toString();
-			else 
+			else
 				url += "?" + sb.toString();
-			
+
 			HttpClient httpclient = createHttpClient(url);
 
 			HttpGet httpget = new HttpGet(url);
-						
-			if ( header != null )
-				for ( String key : header.keySet())
+
+			if (header != null)
+				for (String key : header.keySet())
 					httpget.addHeader(key, header.getString(key));
-						
+
 			HttpResponse response = httpclient.execute(httpget);
-						
+
 			HttpEntity entity = response.getEntity();
 
-			String rst = EntityUtils.toString(entity , "UTF-8");
+			String rst = EntityUtils.toString(entity, "UTF-8");
 			log.info(rst);
-			
+
 			return rst;
-		}
-		catch(Throwable t)
-		{
+		} catch (Throwable t) {
 			log.error(t.getMessage(), t);
 		}
 		finally 
@@ -84,72 +79,62 @@ public class HttpUtil {
 		}
 		return "";
 	}
-	
-	public static String httprequest(String url , String body)
-	{
+
+	public static String httprequest(String url, String body) {
 		HttpClient httpclient = createHttpClient(url);
 		log.info(url);
 		log.info(body);
-		
-		try 
-		{
+
+		try {
 			HttpPost httpost = new HttpPost(url);
-			httpost.setEntity(new StringEntity(body , "UTF-8"));
+			httpost.setEntity(new StringEntity(body, "UTF-8"));
 			HttpResponse response = httpclient.execute(httpost);
-			
+
 			HttpEntity entity = response.getEntity();
 
-			String rst = EntityUtils.toString(entity , "UTF-8");
+			String rst = EntityUtils.toString(entity, "UTF-8");
 			log.info(rst);
-			
+
 			return rst;
-	
+
 		}
-		catch(Throwable t)
-		{
+		catch(Throwable t) {
 			log.error(t.getMessage(), t);
 		}
-		finally 
-		{
+		finally {
 			
 		}
 		return "";
 	}
-	
-	public static String httprequest(String url , Map pmap)
-	{
+
+	public static String httprequest(String url, Map pmap) {
 		JSONObject json = JSON.parseObject(JSON.toJSONString(pmap));
 		HttpClient httpclient = createHttpClient(url);
 		log.info(url);
-		
-		try 
-		{
-			if ( log.isInfoEnabled() )
+
+		try {
+			if (log.isInfoEnabled())
 				log.info(json.toJSONString());
-			
+
 			HttpPost httpost = new HttpPost(url);
-			List <NameValuePair> nvps = new ArrayList <NameValuePair>();
-			
-			for ( String key : json.keySet())
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+
+			for (String key : json.keySet())
 				nvps.add(new BasicNameValuePair(key, json.getString(key)));
-			
+
 			httpost.setEntity(new UrlEncodedFormEntity(nvps, "UTF-8"));
 			HttpResponse response = httpclient.execute(httpost);
-						
+
 			HttpEntity entity = response.getEntity();
 
-			String rst = EntityUtils.toString(entity , "UTF-8");
+			String rst = EntityUtils.toString(entity, "UTF-8");
 			log.info(rst);
-			
+
 			return rst;
-		}
-		catch(Throwable t)
-		{
+		} catch (Throwable t) {
 			log.error(t.getMessage(), t);
-		}
-		finally 
-		{
-			
+		} finally {
+
 		}
 		return "";
 	}
@@ -185,25 +170,23 @@ public class HttpUtil {
 		else 
 			return HttpClientBuilder.create().build();
 	}
-	
-	public static CloseableHttpClient createSSLClientDefault()
-	{
+
+	public static CloseableHttpClient createSSLClientDefault() {
 		try {
-             SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, new AnyTrustStrategy()).build();
-             SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext);
-             return HttpClients.custom().setSSLSocketFactory(sslsf).build();
-         } catch (KeyManagementException e) {
-             e.printStackTrace();
-         } catch (NoSuchAlgorithmException e) {
-             e.printStackTrace();
-         } catch (KeyStoreException e) {
-             e.printStackTrace();
-         }
-         return  HttpClients.createDefault();
+			SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, new AnyTrustStrategy()).build();
+			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext);
+			return HttpClients.custom().setSSLSocketFactory(sslsf).build();
+		} catch (KeyManagementException e) {
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (KeyStoreException e) {
+			e.printStackTrace();
+		}
+		return HttpClients.createDefault();
 	}
 
-	public static void main(String arg[])
-	{
+	public static void main(String arg[]) {
 //		JSONObject json = new JSONObject();
 //		json.put("code", "thirdparter_zufang");
 //		json.put("password", "a4eed9981e2e4df0821376d395f69a6f119915");

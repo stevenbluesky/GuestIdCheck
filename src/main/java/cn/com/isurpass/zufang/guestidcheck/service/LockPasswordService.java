@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
 import javax.transaction.Transactional;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -42,18 +41,23 @@ public class LockPasswordService {
 
     @Value("${districtId}")
     private String districtId;
+
     @Value("${servicePhonenumber}")
     private String servicePhonenumber;
+
     @Value("${passwordSmsTemplateCode}")
     private String passwordSmsTemplateCode;
+
     @Value("${tipSmsTemplateCode}")
     private String tipSmsTemplateCode;
+
     private static final Logger log = LoggerFactory.getLogger(LockPasswordService.class);
+
     @Transactional
     public void sendMessageToCustomer(String name) {
         List<Long> deviceidlist = new ArrayList<>();
         Set<String> phonenumberset = new TreeSet<>();
-        String districtIds = /*MjConfig.get("districtId")*/districtId;
+        String districtIds = districtId;
         long districtId = Long.parseLong(districtIds);
         List<Device> devicelist = dd.findByDistrictIdAndDeviceType(districtId, 0);
         for (Device d : devicelist) {
@@ -89,7 +93,7 @@ public class LockPasswordService {
     public void sendPasswordSms(LockPassword lockpassword) {
         SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm:ss");
         JSONObject json = new JSONObject();
-        String templatecode = /*MjConfig.get("passwordSmsTemplateCode")*/passwordSmsTemplateCode;
+        String templatecode = passwordSmsTemplateCode;
         long dvcid = lockpassword.getDvcid();
         Device device = dd.findById(dvcid);
         if(device.getBindRoomId()==null||device.getDistrictId()==null|| StringUtils.isEmpty(lockpassword.getPassword())){
@@ -119,8 +123,8 @@ public class LockPasswordService {
     @Transactional
     public void sendTipSms(LockPassword lockpassword){
         JSONObject json = new JSONObject();
-        String templatecode = /*MjConfig.get("tipSmsTemplateCode")*/tipSmsTemplateCode;
-        json.put("phonenumber",/*MjConfig.get("servicePhonenumber")*/servicePhonenumber);
+        String templatecode = tipSmsTemplateCode;
+        json.put("phonenumber",servicePhonenumber);
         //"请联系客户服务部门获取开门密码，客服电话：${phonenumber}。"
         MessageParser mp = new MessageParser(null ,templatecode , json);
         AliSmsSender sender = new AliSmsSender();
