@@ -66,7 +66,7 @@ public class LockPasswordService {
         List<LockPassword> lockpasswordrecordlist = lpd.findByUsernameAndUsertypeAndStatus(name, 21,0);
         for (Iterator it = lockpasswordrecordlist.iterator(); it.hasNext(); ) {
             LockPassword lp = (LockPassword) it.next();
-            if (lp.getValidthrough().getTime() < new Date().getTime() || lp.getDeletetime() != null ||
+            if (StringUtils.isEmpty(lp.getPassword())||lp.getValidthrough().getTime() < new Date().getTime() || lp.getDeletetime() != null ||
                     (lp.getValidfrom().getTime() - (long) 2 * 60 * 60 * 1000) > new Date().getTime() || !deviceidlist.contains((long)lp.getDvcid())) {
                 it.remove();
             }
